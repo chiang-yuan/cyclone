@@ -8,7 +8,7 @@ from tqdm.auto import tqdm
 
 from ase import units
 from ase.calculators.mixing import SumCalculator
-from ase.io import read
+from ase.io import read, write
 from ase.io.trajectory import Trajectory
 from ase.md.npt import NPT
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
@@ -23,10 +23,11 @@ def main(
     temperature: float = 300,
     pressure: float = 0 * units.GPa,
     ttime: float = 25 * units.fs,
-    pfactor: float = (75 * units.fs) ** 2 * units.GPa,
+    pfactor: float = (75 * units.fs) ** 1 * units.GPa,
     mask: np.ndarray | list[int] | None = None,
     dispersion: str | None = "bj",
     restart: bool = True,
+    interval: int = 100,
 ):
     mace_calc = MACECalculator(
         model_paths=[
@@ -74,13 +75,18 @@ def main(
     with tqdm(total=nsteps) as pbar:
 
         def log(atoms=atoms, dyn=npt):
-            if dyn.nsteps % 100 == 0:
+            if dyn.nsteps % interval == 0:
                 print(dyn.nsteps, atoms.get_temperature(), atoms.get_potential_energy())
+                write(fxyz, read(ftraj, index=":"), format="extxyz")
             pbar.update()
 
-        npt.attach(traj)
-        npt.attach(log)
+        npt.attach(traj.write)
+        npt.attach(log, interval=interval)
         npt.run(nsteps)
+
+    traj.close()
+
+    write(fxyz, read(ftraj, index=":"), format="extxyz")
 
 
 if __name__ == "__main__":
@@ -93,7 +99,7 @@ if __name__ == "__main__":
     parser.add_argument("--pressure", type=float, default=0)
     parser.add_argument("--ttime", type=float, default=25 * units.fs)
     parser.add_argument(
-        "--pfactor", type=float, default=(75 * units.fs) ** 2 * units.GPa
+        "--pfactor", type=float, default=(75 * units.fs) ** 1 * units.GPa
     )
     parser.add_argument("--mask", type=int, nargs="+", default=None)
     parser.add_argument("--dispersion", type=str, default="bj")
