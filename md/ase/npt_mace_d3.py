@@ -77,16 +77,19 @@ def main(
         def log(atoms=atoms, dyn=npt):
             if dyn.nsteps % interval == 0:
                 print(dyn.nsteps, atoms.get_temperature(), atoms.get_potential_energy())
-                write(fxyz, read(ftraj, index=":"), format="extxyz")
+                for a in traj[-interval:]:
+                    write(fxyz, a, format="extxyz", append=True)
             pbar.update()
 
         npt.attach(traj.write)
         npt.attach(log, interval=interval)
         npt.run(nsteps)
 
-    traj.close()
+    for a in traj[-interval:]:
+        write(fxyz, a, format="extxyz", append=True)
 
-    write(fxyz, read(ftraj, index=":"), format="extxyz")
+    traj.close()
+    # write(fxyz, read(ftraj, index=":"), format="extxyz")
 
 
 if __name__ == "__main__":
