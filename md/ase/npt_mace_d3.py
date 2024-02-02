@@ -8,11 +8,15 @@ from tqdm.auto import tqdm
 
 from ase import units
 from ase.calculators.mixing import SumCalculator
-from ase.io import read, write
-from ase.io.trajectory import Trajectory
+from ase.io import read
 from ase.md.npt import NPT
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
 from mace.calculators import MACECalculator
+
+default_disp_kwrags = dict(
+    xc="pbe",
+    cutoff=40 * units.Bohr,
+)
 
 
 def main(
@@ -26,30 +30,49 @@ def main(
     pfactor: float = (75 * units.fs) ** 1 * units.GPa,
     mask: np.ndarray | list[int] | None = None,
     dispersion: str | None = "bj",
+    dispersion_kwargs: dict = default_disp_kwrags,
     restart: bool = True,
-    interval: int = 100,
+    interval: int = 500,
+    device: str | None = None,
+    dtype: str = "float64",
 ):
+    device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+
+    print(f"Using device: {device}")
+
     mace_calc = MACECalculator(
         model_paths=[
             "/pscratch/sd/c/cyrusyc/mace-universal/pretrained/2023-12-12-mace-128-L1_epoch-199.model"
         ],
-        device="cuda" if torch.cuda.is_available() else "cpu",
-        default_dtype="float64",
+        device=device,
+        default_dtype=dtype,
     )
 
     if dispersion is not None:
+        import re
+
+        print(f"Using dispersion: {dispersion}")
+
+        match = re.search(r"(\d+)", device)
+        if match:
+            device = f"cuda:{int(match.group())+1}"
+            print(f"Using device: {device}")
+
         disp_calc = TorchDFTD3Calculator(
-            device="cuda" if torch.cuda.is_available() else "cpu", damping=dispersion
+            device=device,
+            **dispersion_kwargs,
         )
         calc = SumCalculator([mace_calc, disp_calc])
     else:
         calc = mace_calc
 
     fxyz = fout.with_suffix(".extxyz")
-    ftraj = fout.with_suffix(".traj")
+    fout.with_suffix(".traj")
 
+    last_step = 0
     if restart and fxyz.exists():
         traj = read(fxyz, index=":")
+        last_step = len(traj)
         nsteps -= len(traj)
         atoms = traj[-1]
     else:
@@ -70,26 +93,28 @@ def main(
         mask=mask,
     )
 
-    traj = Trajectory(ftraj, "w", atoms)
+    print(f"Running {npt} for {nsteps} steps from {last_step} to {last_step+nsteps}")
+    print(f"Structure: {atoms}")
+    print(f"Calculator: {atoms.calc}")
+    print(f"Writing to {fxyz}")
 
     with tqdm(total=nsteps) as pbar:
 
-        def log(atoms=atoms, dyn=npt):
+        def write_xyz(dyn=npt, outpath=fxyz):
+            dyn.atoms.write(outpath, format="extxyz", append=True)
+
+        def log(dyn=npt):
             if dyn.nsteps % interval == 0:
-                print(dyn.nsteps, atoms.get_temperature(), atoms.get_potential_energy())
-                for a in traj[-interval:]:
-                    write(fxyz, a, format="extxyz", append=True)
+                print(
+                    dyn.nsteps + last_step,
+                    dyn.atoms.get_temperature(),
+                    dyn.atoms.get_potential_energy(),
+                )
             pbar.update()
 
-        npt.attach(traj.write)
+        npt.attach(write_xyz)
         npt.attach(log, interval=interval)
         npt.run(nsteps)
-
-    for a in traj[-interval:]:
-        write(fxyz, a, format="extxyz", append=True)
-
-    traj.close()
-    # write(fxyz, read(ftraj, index=":"), format="extxyz")
 
 
 if __name__ == "__main__":
@@ -106,7 +131,10 @@ if __name__ == "__main__":
     )
     parser.add_argument("--mask", type=int, nargs="+", default=None)
     parser.add_argument("--dispersion", type=str, default="bj")
+    parser.add_argument("--interval", type=int, default=500)
+    parser.add_argument("--device", type=str, default=None)
     parser.add_argument("--restart", action="store_true")
+
     args = parser.parse_args()
 
     main(**vars(args))
