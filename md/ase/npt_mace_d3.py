@@ -1,4 +1,5 @@
 import argparse
+import ast
 from pathlib import Path
 
 import numpy as np
@@ -19,6 +20,21 @@ default_disp_kwrags = dict(
 )
 
 
+def parse_3x3_array(s):
+    try:
+        # Use ast.literal_eval to safely evaluate the literal expression
+        array_2d = ast.literal_eval(s)
+
+        # Convert the array to NumPy array and check its shape
+        array_2d = np.array(array_2d)
+        if array_2d.shape != (3, 3):
+            raise ValueError("Invalid array shape. Must be a 3x3 array.")
+
+        return array_2d
+    except (ValueError, SyntaxError) as e:
+        raise argparse.ArgumentTypeError(str(e))
+
+
 def main(
     fin: Path,
     fout: Path,
@@ -27,8 +43,9 @@ def main(
     temperature: float = 300,
     pressure: float = 0 * units.GPa,
     ttime: float = 25 * units.fs,
-    pfactor: float = (75 * units.fs) ** 1 * units.GPa,
-    mask: np.ndarray | list[int] | None = None,
+    pfactor: float = (75 * units.fs) ** 50 * units.GPa,
+    mask: np.ndarray | list[int] | None = np.eye(3),
+    traceless: float = 0.0,
     dispersion: str | None = "bj",
     dispersion_kwargs: dict = default_disp_kwrags,
     restart: bool = True,
@@ -92,6 +109,7 @@ def main(
         pfactor=pfactor,
         mask=mask,
     )
+    npt.set_fraction_traceless(traceless)
 
     print(f"Running {npt} for {nsteps} steps from {last_step} to {last_step+nsteps}")
     print(f"Structure: {atoms}")
@@ -110,8 +128,11 @@ def main(
                     dyn.atoms.get_temperature(),
                     dyn.atoms.get_potential_energy(),
                 )
+                dyn.atoms.wrap()
+
             pbar.update()
 
+        # npt.attach(traj.write)
         npt.attach(write_xyz)
         npt.attach(log, interval=interval)
         npt.run(nsteps)
@@ -129,7 +150,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--pfactor", type=float, default=(75 * units.fs) ** 1 * units.GPa
     )
-    parser.add_argument("--mask", type=int, nargs="+", default=None)
+    parser.add_argument(
+        "--mask", type=parse_3x3_array, default="[[1, 0, 0], [0, 1, 0], [0, 0, 1]]"
+    )
     parser.add_argument("--dispersion", type=str, default="bj")
     parser.add_argument("--interval", type=int, default=500)
     parser.add_argument("--device", type=str, default=None)
