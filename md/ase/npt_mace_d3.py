@@ -43,10 +43,10 @@ def main(
     temperature: float = 300,
     pressure: float = 0 * units.GPa,
     ttime: float = 25 * units.fs,
-    pfactor: float = (75 * units.fs) ** 50 * units.GPa,
-    mask: np.ndarray | list[int] | None = np.eye(3),
-    traceless: float = 0.0,
-    dispersion: str | None = "bj",
+    pfactor: float = (75 * units.fs) ** 1 * units.GPa,
+    mask: np.ndarray | list[int] | None = None,
+    traceless: float = 1.0,
+    dispersion: str | None = None,
     dispersion_kwargs: dict = default_disp_kwrags,
     restart: bool = True,
     interval: int = 500,
@@ -144,16 +144,15 @@ if __name__ == "__main__":
     parser.add_argument("fout", type=Path)
     parser.add_argument("--timestep", type=float, default=2 * units.fs)
     parser.add_argument("--nsteps", type=int, default=1000)
-    parser.add_argument("--temperature", type=float, default=300)
+    parser.add_argument("--temperature", type=float, default=1250)
     parser.add_argument("--pressure", type=float, default=0)
-    parser.add_argument("--ttime", type=float, default=25 * units.fs)
+    parser.add_argument("--ttime", type=float, default=100 * units.fs)
     parser.add_argument(
-        "--pfactor", type=float, default=(75 * units.fs) ** 1 * units.GPa
+        "--pfactor", type=float, default=(300 * units.fs) ** 70 * units.GPa
     )
-    parser.add_argument(
-        "--mask", type=parse_3x3_array, default="[[1, 0, 0], [0, 1, 0], [0, 0, 1]]"
-    )
-    parser.add_argument("--dispersion", type=str, default="bj")
+    parser.add_argument("--mask", type=parse_3x3_array, default=None)
+    parser.add_argument("--traceless", type=float, default=1.0)
+    parser.add_argument("--dispersion", default=None)
     parser.add_argument("--interval", type=int, default=500)
     parser.add_argument("--device", type=str, default=None)
     parser.add_argument("--restart", action="store_true")
