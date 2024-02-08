@@ -14,6 +14,8 @@ from ase.md.npt import NPT
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
 from mace.calculators import MACECalculator
 
+# from mace.calculators import mace_mp
+
 default_disp_kwrags = dict(
     xc="pbe",
     cutoff=40 * units.Bohr,
@@ -57,6 +59,7 @@ def main(
 
     print(f"Using device: {device}")
 
+    # mace_calc = mace_mp(device=device, default_dtype=dtype)
     mace_calc = MACECalculator(
         model_paths=[
             "/pscratch/sd/c/cyrusyc/mace-universal/pretrained/2023-12-12-mace-128-L1_epoch-199.model"
@@ -132,7 +135,6 @@ def main(
 
             pbar.update()
 
-        # npt.attach(traj.write)
         npt.attach(write_xyz)
         npt.attach(log, interval=interval)
         npt.run(nsteps)
