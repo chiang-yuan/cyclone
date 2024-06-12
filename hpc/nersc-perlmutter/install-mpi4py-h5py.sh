@@ -1,4 +1,4 @@
-!#/bin/bash
+#!/bin/bash
 
 module load python
 module load cray-hdf5-parallel
