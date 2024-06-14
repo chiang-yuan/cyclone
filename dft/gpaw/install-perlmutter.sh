@@ -10,6 +10,23 @@
 # Post-installation:
 #   - Dynamic linking: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$libxc_path/lib
 
+
+# module load PrgEnv-cray
+# module -t list
+
+module load cudatoolkit/11.7
+module load craype-accel-nvidia80
+
+module load gcc/11.2.0 # match with the python
+
+module load cray-mpich
+module load cray-fftw
+module load cray-libsci
+
+module -t list
+
+export CRAY_ACCEL_TARGET=nvidia80
+
 workdir=$(pwd) # or install to a specific directory
 libxc_path=${workdir}/libxc
 
@@ -34,8 +51,6 @@ if [ ! -d include ]; then
     make install
 fi
 
-
-
 cd $workdir
 
 # https://wiki.fysik.dtu.dk/gpaw/platforms/Cray/nersc_perlmutter.htmli
@@ -43,8 +58,6 @@ cd $workdir
 # export C_INCLUDE_PATH=$C_INCLUDE_PATH:$libxc_path/include
 # export LIBRARY_PATH=$LIBRARY_PATH:$libxc_path/lib
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$libxc_path/lib
-
-module load cray-fftw
 
 pip install ase
 

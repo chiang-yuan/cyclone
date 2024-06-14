@@ -37,6 +37,7 @@ To append use the form
 mpi = True
 if mpi:
     compiler = 'cc'
+extra_compile_args += ['-target-accel=nvidia80']
 
 # FFTW3:
 fftw = True
@@ -45,8 +46,8 @@ if fftw:
 
 # ScaLAPACK (version 2.0.1+ required):
 # ScaLAPACK automatically added by Cray-compiler wrappers on Perlmutter
-#scalapack = True
-#if scalapack:
+# scalapack = True
+# if scalapack:
 #    libraries += ['scalapack']
 
 # Use Elpa (requires ScaLAPACK and Elpa API 20171201):
