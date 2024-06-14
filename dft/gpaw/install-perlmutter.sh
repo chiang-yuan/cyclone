@@ -29,8 +29,8 @@ cd libxc
 if [ ! -d include ]; then
     autoreconf -i
     ./configure --prefix=${libxc_path} CFLAGS="-fPIC"
-    make -j 32
-    make check -j 32
+    make -j 16
+    make check -j 16
     make install
 fi
 

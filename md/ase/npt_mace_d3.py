@@ -1,5 +1,4 @@
-import argparse
-import ast
+import re, ast, argparse
 from pathlib import Path
 
 import numpy as np
@@ -11,8 +10,8 @@ from ase import units
 from ase.calculators.mixing import SumCalculator
 from ase.io import read
 from ase.md.npt import NPT
-from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary
-from mace.calculators import MACECalculator
+from ase.md.velocitydistribution import MaxwellBoltzmannDistribution, Stationary, ZeroRotation
+from mace.calculators import MACECalculator, mace_mp
 
 # from mace.calculators import mace_mp
 
@@ -40,12 +39,12 @@ def parse_3x3_array(s):
 def main(
     fin: Path,
     fout: Path,
-    timestep: float = 2 * units.fs,
+    timestep: float = 2,
     nsteps: int = 1000,
     temperature: float = 300,
-    pressure: float = 0 * units.GPa,
-    ttime: float = 25 * units.fs,
-    pfactor: float = (75 * units.fs) ** 1 * units.GPa,
+    pressure: float = 0,
+    ttime: float | None = 25 * units.fs,
+    pfactor: float | None = (75 * units.fs) ** 1 * units.GPa,
     mask: np.ndarray | list[int] | None = None,
     traceless: float = 1.0,
     dispersion: str | None = None,
@@ -69,8 +68,6 @@ def main(
     )
 
     if dispersion is not None:
-        import re
-
         print(f"Using dispersion: {dispersion}")
 
         match = re.search(r"(\d+)", device)
@@ -102,12 +99,13 @@ def main(
 
     MaxwellBoltzmannDistribution(atoms, temperature_K=temperature)
     Stationary(atoms)
+    ZeroRotation(atoms)
 
     npt = NPT(
         atoms,
-        timestep=timestep,
+        timestep=timestep * units.fs,
         temperature_K=temperature,
-        externalstress=pressure,
+        externalstress=pressure * units.GPa,
         ttime=ttime,
         pfactor=pfactor,
         mask=mask,
