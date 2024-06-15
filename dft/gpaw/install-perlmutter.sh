@@ -7,8 +7,10 @@
 #   3. Copy this file and siteconfig.py to the installation path
 # Installation:
 #   1. Run this script
-# Post-installation:
+# Post-installation / Run-time:
+#   - export MPICH_GPU_SUPPORT_ENABLED=1
 #   - Dynamic linking: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$libxc_path/lib
+
 
 
 # module load PrgEnv-cray

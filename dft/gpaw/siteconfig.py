@@ -39,6 +39,10 @@ if mpi:
     compiler = 'cc'
 extra_compile_args += ['-target-accel=nvidia80']
 
+# GPU:
+gpu = True
+gpu_target = 'cuda'
+
 # FFTW3:
 fftw = True
 if fftw:
