@@ -43,6 +43,11 @@ extra_compile_args += ['-target-accel=nvidia80']
 gpu = True
 gpu_target = 'cuda'
 
+libraries += ['gpaw-cuda', 'cublas', 'cuda']
+define_macros += [('GPAW_CUDA', '1')]
+
+
+
 # FFTW3:
 fftw = True
 if fftw:
