@@ -44,8 +44,12 @@ gpu = True
 gpu_target = 'cuda'
 
 libraries += ['gpaw-cuda', 'cublas', 'cuda']
-define_macros += [('GPAW_CUDA', '1')]
+# define_macros += [('GPAW_CUDA', '1')]
+define_macros += [('GPAW_CUDA', '1'), ('GPAW_GPU', '1')]
 
+# OpenMP:
+extra_compile_args += ['-fopenmp']
+extra_link_args += ['-fopenmp']
 
 
 # FFTW3:

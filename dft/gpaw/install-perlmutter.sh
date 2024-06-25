@@ -16,7 +16,8 @@
 # module load PrgEnv-cray
 # module -t list
 
-module load cudatoolkit/11.7
+module load gpu
+module load cudatoolkit/12.0
 module load craype-accel-nvidia80
 
 module load gcc/11.2.0 # match with the python
@@ -47,7 +48,7 @@ cd libxc
 
 if [ ! -d include ]; then
     autoreconf -i
-    ./configure --prefix=${libxc_path} CFLAGS="-fPIC"
+    ./configure --prefix=${libxc_path} CFLAGS="-O3 -fPIC"
     make -j 16
     make check -j 16
     make install
