@@ -68,12 +68,12 @@ if [ ! -d gpaw ]; then
     git clone https://gitlab.com/gpaw/gpaw.git
 fi
 
-cp siteconfig.py gpaw/
+# cp siteconfig.py gpaw/
 
 cd gpaw
 # wget https://raw.githubusercontent.com/NERSC/community-software/main/gpaw/siteconfig.py -O siteconfig.py
 
-sed -i "s|'/your/path/to/libxc/6.2.2'|\'${libxc_path}\'|g" siteconfig.py
+sed -i "s|'/your/path/to/libxc/6.2.2'|\'${libxc_path}/\'|g" siteconfig.py
 
 python setup.py build_ext
 python setup.py install

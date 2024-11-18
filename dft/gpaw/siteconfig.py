@@ -43,7 +43,11 @@ extra_compile_args += ['-target-accel=nvidia80']
 gpu = True
 gpu_target = 'cuda'
 
-libraries += ['gpaw-cuda', 'cublas', 'cuda']
+libraries += [
+  # 'gpaw-cuda',
+  'cublas', 'cufft', 'cuda',  # comment out if no cuda
+  'cudart',  # comment out if no cuda
+]
 # define_macros += [('GPAW_CUDA', '1')]
 define_macros += [('GPAW_CUDA', '1'), ('GPAW_GPU', '1')]
 
@@ -88,8 +92,8 @@ if 0:
 if 1:
     # Edit this line to point to the location of your libxc install
     xc = '/your/path/to/libxc/6.2.2'
-    include_dirs += [xc + '/include']
-    library_dirs += [xc + '/lib']
+    include_dirs += [xc + 'include']
+    library_dirs += [xc + 'lib']
     # You can use rpath to avoid changing LD_LIBRARY_PATH:
     runtime_library_dirs += [xc + '/lib']
     if 'xc' not in libraries:
