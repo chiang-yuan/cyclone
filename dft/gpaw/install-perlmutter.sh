@@ -11,22 +11,35 @@
 #   - export MPICH_GPU_SUPPORT_ENABLED=1
 #   - Dynamic linking: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$libxc_path/lib
 
+module purge
+source /opt/cray/pe/cpe/23.12/restore_lmod_system_defaults.sh
 
+module load python
+source activate /pscratch/sd/c/cyrusyc/.conda/mlip-arena
 
-# module load PrgEnv-cray
-# module -t list
-
-module load gpu
-module load cudatoolkit/12.0
+module load PrgEnv-cray
+module load craype-x86-milan
+module load cudatoolkit/12.2
 module load craype-accel-nvidia80
-
-module load gcc/11.2.0 # match with the python
-
-module load cray-mpich
 module load cray-fftw
-module load cray-libsci
 
 module -t list
+
+# conda/Miniconda3-py311_23.11.0-2
+# evp-patch
+# python/3.11
+# cce/17.0.0
+# craype/2.7.30
+# cray-dsmml/0.2.2
+# libfabric/1.20.1
+# craype-network-ofi
+# cray-mpich/8.1.28
+# cray-libsci/23.12.5
+# PrgEnv-cray/8.5.0
+# craype-x86-milan
+# cudatoolkit/12.2
+# craype-accel-nvidia80
+# cray-fftw/3.3.10.6
 
 export CRAY_ACCEL_TARGET=nvidia80
 
@@ -62,7 +75,7 @@ cd $workdir
 # export LIBRARY_PATH=$LIBRARY_PATH:$libxc_path/lib
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$libxc_path/lib
 
-pip install ase
+# pip install ase
 
 if [ ! -d gpaw ]; then
     git clone https://gitlab.com/gpaw/gpaw.git
