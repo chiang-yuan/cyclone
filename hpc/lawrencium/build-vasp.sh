@@ -36,6 +36,8 @@ make distclean
 make -j16
 make install
 
+cd -
+
 #
 # VASP
 #
@@ -60,3 +62,5 @@ sed -i "s|/path/to/your/fftw/installation|$FFTW_ROOT|g" makefile.include
 
 make clean
 make DEPS=1 -j16 all
+
+cp bin/* ~/.local/bin
