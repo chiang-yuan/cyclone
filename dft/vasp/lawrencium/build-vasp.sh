@@ -27,7 +27,7 @@ fi
 
 cd ${src_folder}
 
-fftw_dir="~/.local/fftw/${fftw_version}"
+fftw_dir="${HOME}/.local/fftw/${fftw_version}"
 
 mkdir -p ${fftw_dir}
 
