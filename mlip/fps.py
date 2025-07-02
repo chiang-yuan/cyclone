@@ -47,16 +47,14 @@ def mace_mp_fps(
 
     descriptors = np.array(descriptors)
 
-    _, indices = find_farthest_points(descriptors, nsamples, bound="infimum")
+    sampled_descriptors, indices = find_farthest_points(descriptors, nsamples, bound="infimum")
 
     sampled_traj = []
-    sampled_descriptors = []
 
     for idx in indices:
         sampled_traj.append(traj[idx])
-        sampled_descriptors.append(descriptors[idx])
 
-    return sampled_traj, np.array(sampled_descriptors)
+    return sampled_traj, sampled_descriptors
 
 
 def find_farthest_points(X, n_points, metric="seuclidean", bound="infimum"):
