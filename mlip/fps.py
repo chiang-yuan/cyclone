@@ -8,7 +8,10 @@ from typing import Sequence
 
 
 def mace_mp_fps(
-    traj: Sequence[Atoms], nsamples: int | None = None, model="medium-mpa-0"
+    traj: Sequence[Atoms],
+    nsamples: int | None = None,
+    model="medium-mpa-0",
+    metric="seuclidean",
 ):
     """
     Perform farthest point sampling (FPS) on a trajectory of atomic structures using MACE-MP descriptors.
@@ -16,6 +19,7 @@ def mace_mp_fps(
         traj (Sequence[Atoms]): A sequence of atomic structures (e.g., ASE Atoms objects) representing the trajectory.
         nsamples (int | None, optional): The number of samples to select. If None, defaults to 10% of the trajectory length.
         model (str, optional): The MACE-MP model to use for descriptor calculation. Defaults to MACE-MPA ("medium-mpa-0").
+        metric (str, optional): The distance metric to use for computing pairwise distances between descriptors. Defaults to "seuclidean".
     Returns:
         tuple:
             - sampled_traj (list[Atoms]): A list of sampled atomic structures from the trajectory.
@@ -39,6 +43,11 @@ def mace_mp_fps(
         )
         nsamples = int(len(traj) * 0.1)
 
+    assert nsamples > 0, "Number of samples must be greater than 0."
+    assert nsamples < len(traj), (
+        "Number of samples must be less than the trajectory length."
+    )
+
     descriptors = []
 
     for atoms in tqdm(traj, desc="MACE-MP descriptors"):
@@ -47,7 +56,9 @@ def mace_mp_fps(
 
     descriptors = np.array(descriptors)
 
-    sampled_descriptors, indices = find_farthest_points(descriptors, nsamples, bound="infimum")
+    sampled_descriptors, indices = find_farthest_points(
+        descriptors, nsamples, metric, bound="infimum"
+    )
 
     sampled_traj = []
 
